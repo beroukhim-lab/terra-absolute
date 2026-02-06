@@ -1,14 +1,16 @@
 version: 1.2
 workflows:
-name: absolute_wkflw
-  subclass: WDL
-  primaryDescriptorPath:absolute_run.wdl
-  testParameterFiles:
-name: absolute_forcecall_wkflw
-  subclass: WDL
-  primaryDescriptorPath:absolute_force_call.wdl
-  testParameterFiles:
-name: maf_to_absolute_workflow
-  subclass: WDL
-  primaryDescriptorPath:maf_to_absolute.wdl
-  testParameterFiles:
+  - name: absolute_wkflw
+    subclass: WDL
+    primaryDescriptorPath: /absolute_run.wdl
+    testParameterFiles: []
+
+  - name: absolute_forcecall_wkflw
+    subclass: WDL
+    primaryDescriptorPath: /absolute_force_call.wdl
+    testParameterFiles: []
+
+  - name: maf_to_absolute_workflow
+    subclass: WDL
+    primaryDescriptorPath: /maf_to_absolute.wdl
+    testParameterFiles: []
