@@ -7,9 +7,14 @@ task maf_to_absolute_inputs {
   input {
     File maf
     String sample_id
+
+    Int mem_gb = 8
+    Int cpu = 1
+    Int disk_gb = 20
   }
 
   command <<<
+    set -euo pipefail
     # Create the R script at runtime
     cat << 'EOF' > maf_to_absolute_inputs.R
 #!/usr/bin/env Rscript
@@ -93,7 +98,9 @@ EOF
 
   runtime {
     docker: "rocker/r-base:4.3.2"
-    memory: "2G"
+    cpu: cpu
+    memory: "~{mem_gb}G"
+    disks: "local-disk ~{disk_gb} HDD"
   }
 }
 
@@ -104,12 +111,20 @@ workflow maf_to_absolute_workflow {
   input {
     File maf
     String sample_id
+
+    # workflow-level knobs users can set in Terra
+    Int maf_to_abs_mem_gb = 8
+    Int maf_to_abs_cpu = 1
+    Int maf_to_abs_disk_gb = 20
   }
 
   call maf_to_absolute_inputs {
     input:
       maf = maf,
-      sample_id = sample_id
+      sample_id = sample_id,
+      mem_gb = maf_to_abs_mem_gb,
+      cpu = maf_to_abs_cpu,
+      disk_gb = maf_to_abs_disk_gb
   }
 
   output {
