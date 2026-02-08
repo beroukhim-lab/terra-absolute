@@ -7,6 +7,11 @@ task absolute {
     File indel
     Float skew = 0.99
     String sample_name
+
+    Int mem_gb = 32
+    Int cpu = 2
+    Int disk_gb = 150
+    String disk_type = "HDD"   # or "SSD"
   }
 
   command <<<
@@ -110,8 +115,10 @@ task absolute {
   >>>
 
   runtime {
-    memory: "7G"
     docker: "gcr.io/broad-getzlab-workflows/absolute_wolf:no_indel_filter_v6"
+    cpu: cpu
+    memory: "~{mem_gb}G"
+    disks: "local-disk ~{disk_gb} ~{disk_type}"
   }
 
   output {
@@ -130,6 +137,12 @@ workflow absolute_wkflw {
     File indel
     Float skew = 0.99
     String sample_name
+
+    # workflow-level knobs users can set in Terra
+    Int absolute_mem_gb = 32
+    Int absolute_cpu = 2
+    Int absolute_disk_gb = 150
+    String absolute_disk_type = "HDD"
   }
 
   call absolute {
@@ -138,7 +151,11 @@ workflow absolute_wkflw {
       snp = snp,
       indel = indel,
       skew = skew,
-      sample_name = sample_name
+      sample_name = sample_name,
+      mem_gb = absolute_mem_gb,
+      cpu = absolute_cpu,
+      disk_gb = absolute_disk_gb,
+      disk_type = absolute_disk_type
   }
 
   output {
