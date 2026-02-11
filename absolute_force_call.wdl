@@ -171,7 +171,7 @@ workflow absolute_forcecall_wkflw {
       sample_name = sample_name,
       force_alpha = force_alpha,
       force_tau = force_tau,
-      skew = skew
+      skew = skew,
       cpu = cpu,
       mem_gb = mem_gb,
       disk_gb = disk_gb,
