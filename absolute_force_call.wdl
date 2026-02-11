@@ -12,6 +12,10 @@ task absolute_forcecall {
     # Purity/ploidy to force (matches your SGE script: --force_alpha and --force_tau)
     Float force_alpha
     Float force_tau
+
+    Int cpu = 2
+    Int mem_gb = 16
+    Int disk_gb = 50
   }
 
   command <<<
@@ -130,7 +134,9 @@ task absolute_forcecall {
   >>>
 
   runtime {
-    memory: "7G"
+    cpu: cpu
+    memory: "~{mem_gb}G"
+    disks: "local-disk ~{disk_gb} HDD"
     docker: "gcr.io/broad-getzlab-workflows/absolute_wolf:no_indel_filter_v6"
   }
 
@@ -152,6 +158,9 @@ workflow absolute_forcecall_wkflw {
     Float force_alpha
     Float force_tau
     Float skew = 0.99
+    Int cpu = 2
+    Int mem_gb = 16
+    Int disk_gb = 50
   }
 
   call absolute_forcecall {
@@ -163,6 +172,9 @@ workflow absolute_forcecall_wkflw {
       force_alpha = force_alpha,
       force_tau = force_tau,
       skew = skew
+      cpu = cpu,
+      mem_gb = mem_gb,
+      disk_gb = disk_gb,
   }
 
   output {
