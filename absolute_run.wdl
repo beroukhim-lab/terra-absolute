@@ -2,7 +2,7 @@ version 1.0
 
 task absolute {
   input {
-    File seg_file
+    File capseg_file
     File snp
     File indel
     Float skew = 0.99
@@ -18,11 +18,11 @@ task absolute {
     set -euo pipefail
 
     echo "=== INPUT FILES (as provided to task) ==="
-    ls -lh "~{seg_file}" "~{snp}" "~{indel}"
+    ls -lh "~{capseg_file}" "~{snp}" "~{indel}"
     echo ""
 
     # --- Clean seg: remove NA rows and strip chr from column 1 (keep header)
-    grep -v "NA" "~{seg_file}" > no_nan_segs.tsv
+    grep -v "NA" "~{capseg_file}" > no_nan_segs.tsv
     awk 'BEGIN{FS=OFS="\t"} NR==1{print;next} {gsub(/^chr/, "", $1); print}' \
       no_nan_segs.tsv > reformat_seg.tsv
 
@@ -132,7 +132,7 @@ task absolute {
 
 workflow absolute_wkflw {
   input {
-    File seg_file
+    File capseg_file
     File snp
     File indel
     Float skew = 0.99
@@ -147,7 +147,7 @@ workflow absolute_wkflw {
 
   call absolute {
     input:
-      seg_file = seg_file,
+      capseg_file = capseg_file,
       snp = snp,
       indel = indel,
       skew = skew,
