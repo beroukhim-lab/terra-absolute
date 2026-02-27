@@ -27,4 +27,9 @@ workflows:
       /test_inputs.json
     ]
 
+  - name: preprocess_absolute
+    subclass: WDL
+    primaryDescriptorPath: /preprocess_absolute.wdl
+    testParameterFiles: []
+
 
