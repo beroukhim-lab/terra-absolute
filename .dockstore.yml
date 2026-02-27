@@ -24,7 +24,7 @@ workflows:
     subclass: WDL
     primaryDescriptorPath: /another_wdl_test.wdl
     testParameterFiles: [
-      /capseg_conv.R
+      /test_inputs.json
     ]
 
 
