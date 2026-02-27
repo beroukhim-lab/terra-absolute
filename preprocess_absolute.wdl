@@ -1,56 +1,5 @@
 version 1.0
 
-workflow preprocess_absolute_capseg {
-  input {
-    # --- ABSOLUTE inputs ---
-    File maf
-    String sample_id
-
-    Int maf_to_abs_mem_gb = 8
-    Int maf_to_abs_cpu = 1
-    Int maf_to_abs_disk_gb = 20
-
-    # --- CAPSEG conversion ---
-    File processed_counts
-    File segfile
-    String participant_id
-
-    # Option A: provide the R script as a file (Terra input)
-
-    # Option B: OR provide a GitHub raw URL to download at runtime
-    # Example raw URL:
-    # https://raw.githubusercontent.com/<org>/<repo>/<ref>/path/to/script.R
-
-    String capseg_memory = "10 GB"
-    String capseg_docker = "wchukwu/r-docker:latest"
-  }
-
-  call maf_to_absolute_inputs {
-    input:
-      maf = maf,
-      sample_id = sample_id,
-      mem_gb = maf_to_abs_mem_gb,
-      cpu = maf_to_abs_cpu,
-      disk_gb = maf_to_abs_disk_gb
-  }
-
-  call make_capseg {
-    input:
-      processed_counts = processed_counts,
-      segfile = segfile,
-      participant_id = participant_id,
-      memory = capseg_memory,
-      r_dockerImage = capseg_docker
-  }
-
-  output {
-    File snp        = maf_to_absolute_inputs.snp
-    File indel      = maf_to_absolute_inputs.indel
-    File capseg_out = make_capseg_task.seg_file
-  }
-}
-
-
 # ------------------------
 # Task: Runs your R script
 # ------------------------
@@ -194,3 +143,50 @@ task make_capseg {
         docker: r_dockerImage
     }
 }
+
+
+workflow preprocess_absolute_capseg {
+  input {
+    # --- ABSOLUTE inputs ---
+    File maf
+    String sample_id
+
+    Int maf_to_abs_mem_gb = 8
+    Int maf_to_abs_cpu = 1
+    Int maf_to_abs_disk_gb = 20
+
+    # --- CAPSEG conversion ---
+    File processed_counts
+    File segfile
+    String participant_id
+
+    String capseg_memory = "10 GB"
+    String capseg_docker = "wchukwu/r-docker:latest"
+  }
+
+  call maf_to_absolute_inputs {
+    input:
+      maf = maf,
+      sample_id = sample_id,
+      mem_gb = maf_to_abs_mem_gb,
+      cpu = maf_to_abs_cpu,
+      disk_gb = maf_to_abs_disk_gb
+  }
+
+  call make_capseg {
+    input:
+      processed_counts = processed_counts,
+      segfile = segfile,
+      participant_id = participant_id,
+      memory = capseg_memory,
+      r_dockerImage = capseg_docker
+  }
+
+  output {
+    File snp        = maf_to_absolute_inputs.snp
+    File indel      = maf_to_absolute_inputs.indel
+    File capseg_out = make_capseg.seg_file
+  }
+}
+
+
