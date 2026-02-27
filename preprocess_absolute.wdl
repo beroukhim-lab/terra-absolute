@@ -120,9 +120,8 @@ task make_capseg {
 
     echo "Downloading capseg_conv.R from GitHub"
 
-    curl -fL --retry 3 \
-      https://raw.githubusercontent.com/beroukhim-lab/terra-absolute/3390dbe6b7c629de136cfab54179c150c93b1d86/capseg_conv.R \
-      -o capseg_conv.R
+    wget -O capseg_conv.R "https://raw.githubusercontent.com/beroukhim-lab/terra-absolute/3390dbe6b7c629de136cfab54179c150c93b1d86/capseg_conv.R"
+
 
     chmod +x capseg_conv.R
 
