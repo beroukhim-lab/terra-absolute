@@ -118,20 +118,35 @@ task make_capseg {
   command <<<
     set -euo pipefail
 
-    echo "Installing required R packages"
-    Rscript -e 'install.packages("data.table", repos="https://cloud.r-project.org")'
-
+    echo "Downloading capseg_conv.R from GitHub"
     wget -O capseg_conv.R \
-        https://raw.githubusercontent.com/beroukhim-lab/terra-absolute/3390dbe6b7c629de136cfab54179c150c93b1d86/capseg_conv.R
-
+      https://raw.githubusercontent.com/beroukhim-lab/terra-absolute/3390dbe6b7c629de136cfab54179c150c93b1d86/capseg_conv.R
     chmod +x capseg_conv.R
 
-    Rscript capseg_conv.R \
-        --segfile ~{segfile} \
-        --processed_cts ~{processed_counts} \
-        --participant_id ~{participant_id}
-    >>>
+    echo "Detecting packages imported by capseg_conv.R and installing any that are missing"
+    Rscript -e 'x <- readLines("capseg_conv.R"); \
+      pkgs <- grep("^(library|require)\\(", x, value=TRUE); \
+      pkgs <- gsub("^(library|require)\\(|\\).*", "", pkgs); \
+      pkgs <- gsub(",.*$", "", pkgs); \
+      pkgs <- gsub("[\"\\x27[:space:]]", "", pkgs); \
+      pkgs <- pkgs[nzchar(pkgs)]; \
+      pkgs <- unique(pkgs); \
+      cat("Packages referenced:", paste(pkgs, collapse=", "), "\n"); \
+      inst <- rownames(installed.packages()); \
+      to_install <- setdiff(pkgs, inst); \
+      if(length(to_install)) { \
+        cat("Installing:", paste(to_install, collapse=", "), "\n"); \
+        install.packages(to_install, repos="https://cloud.r-project.org"); \
+      } else { \
+        cat("No installs needed.\n"); \
+      }'
 
+    echo "Running capseg conversion"
+    Rscript capseg_conv.R \
+      --segfile ~{segfile} \
+      --processed_cts ~{processed_counts} \
+      --participant_id ~{participant_id}
+  >>>
 
   output {
     File seg_file = "~{participant_id}.capseg.txt"
@@ -144,6 +159,7 @@ task make_capseg {
     disks: "local-disk ~{disk_gb} HDD"
   }
 }
+
 
 
 workflow preprocess_absolute_capseg {
