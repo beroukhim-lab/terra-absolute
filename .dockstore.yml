@@ -14,3 +14,17 @@ workflows:
     subclass: WDL
     primaryDescriptorPath: /maf_to_absolute.wdl
     testParameterFiles: []
+
+  - name: capseg
+    subclass: R
+    primaryDescriptorPath: /caseg_conv.R
+    testParameterFiles: []
+  
+  - name: another_test
+    subclass: WDL
+    primaryDescriptorPath: /another_wdl_test.wdl
+    testParameterFiles: [
+      /capseg_conv.R
+    ]
+
+
