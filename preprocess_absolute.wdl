@@ -118,23 +118,20 @@ task make_capseg {
   command <<<
     set -euo pipefail
 
-    echo "Downloading capseg_conv.R from GitHub"
+    echo "Installing required R packages"
+    Rscript -e 'install.packages("data.table", repos="https://cloud.r-project.org")'
 
-    set -euo pipefail
-    apt-get update
-    apt-get install -y curl
-
-    curl -fL --retry 3 \
-        https://raw.githubusercontent.com/beroukhim-lab/terra-absolute/3390dbe6b7c629de136cfab54179c150c93b1d86/capseg_conv.R \
-        -o capseg_conv.R
+    wget -O capseg_conv.R \
+        https://raw.githubusercontent.com/beroukhim-lab/terra-absolute/3390dbe6b7c629de136cfab54179c150c93b1d86/capseg_conv.R
 
     chmod +x capseg_conv.R
 
     Rscript capseg_conv.R \
-      --segfile ~{segfile} \
-      --processed_cts ~{processed_counts} \
-      --participant_id ~{participant_id}
-  >>>
+        --segfile ~{segfile} \
+        --processed_cts ~{processed_counts} \
+        --participant_id ~{participant_id}
+    >>>
+
 
   output {
     File seg_file = "~{participant_id}.capseg.txt"
