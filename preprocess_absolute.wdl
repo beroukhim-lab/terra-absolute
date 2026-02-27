@@ -105,15 +105,14 @@ EOF
 }
 
 task make_capseg {
-
     input{
         File processed_counts
         File segfile
         String participant_id
 
-        String memory = "10 GB"
-        Int timeMinutes = 1 + ceil(size(processed_counts, "G"))
-        String r_dockerImage = "wchukwu/r-docker:latest"
+        Int cpu = 1
+        Int mem_gb = 10
+        Int disk_gb = 20
     }
 
     command <<<
@@ -138,12 +137,11 @@ task make_capseg {
     }
 
     runtime{
-        memory: memory
-        time_minutes: timeMinutes
-        docker: r_dockerImage
+        cpu: cpu
+        memory: "~{mem_gb} GB"
+        disks: "local-disk ~{disk_gb} HDD"
     }
 }
-
 
 workflow preprocess_absolute_capseg {
   input {
@@ -160,8 +158,9 @@ workflow preprocess_absolute_capseg {
     File segfile
     String participant_id
 
-    String capseg_memory = "10 GB"
-    String capseg_docker = "wchukwu/r-docker:latest"
+    Int capseg_cpu = 1
+    Int capseg_mem_gb = 10
+    Int capseg_disk_gb = 20
   }
 
   call maf_to_absolute_inputs {
@@ -178,8 +177,9 @@ workflow preprocess_absolute_capseg {
       processed_counts = processed_counts,
       segfile = segfile,
       participant_id = participant_id,
-      memory = capseg_memory,
-      r_dockerImage = capseg_docker
+      cpu = capseg_cpu,
+      mem_gb = capseg_mem_gb,
+      disk_gb = capseg_disk_gb
   }
 
   output {
@@ -188,5 +188,3 @@ workflow preprocess_absolute_capseg {
     File capseg_out = make_capseg.seg_file
   }
 }
-
-
