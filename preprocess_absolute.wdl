@@ -105,43 +105,45 @@ EOF
 }
 
 task make_capseg {
-    input{
-        File processed_counts
-        File segfile
-        String participant_id
+  input {
+    File processed_counts
+    File segfile
+    String participant_id
 
-        Int cpu = 1
-        Int mem_gb = 10
-        Int disk_gb = 20
-    }
+    Int cpu = 1
+    Int mem_gb = 10
+    Int disk_gb = 20
+  }
 
-    command <<<
-        set -euo pipefail
+  command <<<
+    set -euo pipefail
 
-        echo "Downloading capseg_conv.R from GitHub"
+    echo "Downloading capseg_conv.R from GitHub"
 
-        curl -fL --retry 3 \
-          https://raw.githubusercontent.com/beroukhim-lab/terra-absolute/3390dbe6b7c629de136cfab54179c150c93b1d86/capseg_conv.R \
-          -o capseg_conv.R
+    curl -fL --retry 3 \
+      https://raw.githubusercontent.com/beroukhim-lab/terra-absolute/3390dbe6b7c629de136cfab54179c150c93b1d86/capseg_conv.R \
+      -o capseg_conv.R
 
-        chmod +x capseg_conv.R
+    chmod +x capseg_conv.R
 
-        Rscript capseg_conv.R \
-            --segfile ~{segfile} \
-            --processed_cts ~{processed_counts} \
-            --participant_id ~{participant_id}
-    >>>
+    Rscript capseg_conv.R \
+      --segfile ~{segfile} \
+      --processed_cts ~{processed_counts} \
+      --participant_id ~{participant_id}
+  >>>
 
-    output {
-        File seg_file = "~{participant_id}.capseg.txt"
-    }
+  output {
+    File seg_file = "~{participant_id}.capseg.txt"
+  }
 
-    runtime{
-        cpu: cpu
-        memory: "~{mem_gb} GB"
-        disks: "local-disk ~{disk_gb} HDD"
-    }
+  runtime {
+    docker: "rocker/r-base:4.3.2"
+    cpu: cpu
+    memory: "~{mem_gb}G"
+    disks: "local-disk ~{disk_gb} HDD"
+  }
 }
+
 
 workflow preprocess_absolute_capseg {
   input {
