@@ -128,7 +128,7 @@ task capseg_convert {
   }
 
   runtime {
-    docker: "ghcr.io/beroukhim-lab/terra-absolute:latest"
+    docker: "beroukhimlab/terra-absolute:latest"
     cpu: cpu
     memory: "~{mem_gb}G"
     disks: "local-disk ~{disk_gb} HDD"
