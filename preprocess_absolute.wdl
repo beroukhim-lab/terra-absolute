@@ -104,62 +104,36 @@ EOF
   }
 }
 
-task make_capseg {
+task capseg_convert {
   input {
-    File processed_counts
     File segfile
+    File processed_cts
     String participant_id
 
-    Int cpu = 1
-    Int mem_gb = 10
-    Int disk_gb = 20
+    Int cpu = 8
+    Int mem_gb = 16
+    Int disk_gb = 50
   }
 
   command <<<
     set -euo pipefail
-
-    echo "Downloading capseg_conv.R from GitHub"
-    wget -O capseg_conv.R \
-      https://raw.githubusercontent.com/beroukhim-lab/terra-absolute/3390dbe6b7c629de136cfab54179c150c93b1d86/capseg_conv.R
-    chmod +x capseg_conv.R
-
-    echo "Detecting packages imported by capseg_conv.R and installing any that are missing"
-    Rscript -e 'x <- readLines("capseg_conv.R"); \
-      pkgs <- grep("^(library|require)\\(", x, value=TRUE); \
-      pkgs <- gsub("^(library|require)\\(|\\).*", "", pkgs); \
-      pkgs <- gsub(",.*$", "", pkgs); \
-      pkgs <- gsub("[\"\\x27[:space:]]", "", pkgs); \
-      pkgs <- pkgs[nzchar(pkgs)]; \
-      pkgs <- unique(pkgs); \
-      cat("Packages referenced:", paste(pkgs, collapse=", "), "\n"); \
-      inst <- rownames(installed.packages()); \
-      to_install <- setdiff(pkgs, inst); \
-      if(length(to_install)) { \
-        cat("Installing:", paste(to_install, collapse=", "), "\n"); \
-        install.packages(to_install, repos="https://cloud.r-project.org"); \
-      } else { \
-        cat("No installs needed.\n"); \
-      }'
-
-    echo "Running capseg conversion"
-    Rscript capseg_conv.R \
+    Rscript /opt/app/capseg_conv.R \
       --segfile ~{segfile} \
-      --processed_cts ~{processed_counts} \
+      --processed_cts ~{processed_cts} \
       --participant_id ~{participant_id}
   >>>
 
   output {
-    File seg_file = "~{participant_id}.capseg.txt"
+    File capseg_txt = "~{participant_id}.capseg.txt"
   }
 
   runtime {
-    docker: "rocker/r-base:4.3.2"
+    docker: "ghcr.io/beroukhim-lab/terra-absolute:latest"
     cpu: cpu
     memory: "~{mem_gb}G"
     disks: "local-disk ~{disk_gb} HDD"
   }
 }
-
 
 
 workflow preprocess_absolute_capseg {
@@ -191,19 +165,19 @@ workflow preprocess_absolute_capseg {
       disk_gb = maf_to_abs_disk_gb
   }
 
-  call make_capseg {
+ call capseg_convert {
     input:
-      processed_counts = processed_counts,
-      segfile = segfile,
-      participant_id = participant_id,
-      cpu = capseg_cpu,
-      mem_gb = capseg_mem_gb,
-      disk_gb = capseg_disk_gb
-  }
+        processed_cts = processed_counts,
+        segfile = segfile,
+        participant_id = participant_id,
+        cpu = capseg_cpu,
+        mem_gb = capseg_mem_gb,
+        disk_gb = capseg_disk_gb
+    }
 
   output {
     File snp        = maf_to_absolute_inputs.snp
     File indel      = maf_to_absolute_inputs.indel
-    File capseg_out = make_capseg.seg_file
+    File capseg_out = capseg_convert.capseg_txt
   }
 }
