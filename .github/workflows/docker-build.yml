@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
     paths:
       - "Dockerfile"
-      - "R/**"
+      - "capseg_conv.R"
       - ".github/workflows/docker-build.yml"
 
 permissions:
