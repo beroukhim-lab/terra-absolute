@@ -104,18 +104,56 @@ EOF
   }
 }
 
-# ------------------------
-# Workflow: Calls the task
-# ------------------------
-workflow maf_to_absolute_workflow {
+task capseg_convert {
   input {
+    File segfile
+    File processed_cts
+    String participant_id
+
+    Int cpu = 8
+    Int mem_gb = 16
+    Int disk_gb = 50
+  }
+
+  command <<<
+    set -euo pipefail
+    Rscript /opt/app/capseg_conv.R \
+      --segfile ~{segfile} \
+      --processed_cts ~{processed_cts} \
+      --participant_id ~{participant_id}
+  >>>
+
+  output {
+    File capseg_txt = "~{participant_id}.capseg.txt"
+  }
+
+  runtime {
+    docker: "jchen1095/terra-absolute:latest"
+    cpu: cpu
+    memory: "~{mem_gb}G"
+    disks: "local-disk ~{disk_gb} HDD"
+  }
+}
+
+
+workflow preprocess_absolute_capseg {
+  input {
+    # --- ABSOLUTE inputs ---
     File maf
     String sample_id
 
-    # workflow-level knobs users can set in Terra
     Int maf_to_abs_mem_gb = 8
     Int maf_to_abs_cpu = 1
     Int maf_to_abs_disk_gb = 20
+
+    # --- CAPSEG conversion ---
+    File processed_counts
+    File segfile
+    String participant_id
+
+    Int capseg_cpu = 1
+    Int capseg_mem_gb = 10
+    Int capseg_disk_gb = 20
   }
 
   call maf_to_absolute_inputs {
@@ -127,8 +165,19 @@ workflow maf_to_absolute_workflow {
       disk_gb = maf_to_abs_disk_gb
   }
 
+ call capseg_convert {
+    input:
+        processed_cts = processed_counts,
+        segfile = segfile,
+        participant_id = participant_id,
+        cpu = capseg_cpu,
+        mem_gb = capseg_mem_gb,
+        disk_gb = capseg_disk_gb
+    }
+
   output {
-    File snp   = maf_to_absolute_inputs.snp
-    File indel = maf_to_absolute_inputs.indel
+    File snp        = maf_to_absolute_inputs.snp
+    File indel      = maf_to_absolute_inputs.indel
+    File capseg_out = capseg_convert.capseg_txt
   }
 }
