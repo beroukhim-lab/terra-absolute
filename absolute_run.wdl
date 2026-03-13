@@ -26,9 +26,10 @@ task absolute {
     awk 'BEGIN{FS=OFS="\t"} NR==1{print;next} {gsub(/^chr/, "", $1); print}' \
       no_nan_segs.tsv > reformat_seg.tsv
 
-    # --- Use provided SNP/INDEL, only strip chr (assumes Chromosome is column 5 like standard MAF)
-    awk 'BEGIN{FS=OFS="\t"} NR==1{print;next} {gsub(/^chr/, "", $5); print}' "~{snp}"   > reformat_snv.maf
-    awk 'BEGIN{FS=OFS="\t"} NR==1{print;next} {gsub(/^chr/, "", $5); print}' "~{indel}" > reformat_indel.maf
+
+    # --- Use provided SNP/INDEL, only strip chr (Chromosome is column 2 in reduced MAF)
+    awk 'BEGIN{FS=OFS="\t"} NR==1{print;next} {gsub(/^chr/, "", $2); print}' "~{snp}"   > reformat_snv.maf
+    awk 'BEGIN{FS=OFS="\t"} NR==1{print;next} {gsub(/^chr/, "", $2); print}' "~{indel}" > reformat_indel.maf
 
     echo "=== PREVIEW: SEG (reformat_seg.tsv) ==="
     head -n 5 reformat_seg.tsv
@@ -45,10 +46,9 @@ task absolute {
     echo "Rows:"; wc -l reformat_indel.maf
     echo ""
 
-    # --- HARD VALIDATION: ensure SNV/INDEL not empty (beyond header)
-    snv_lines=$(wc -l < reformat_snv.maf)
-    indel_lines=$(wc -l < reformat_indel.maf)
-    seg_lines=$(wc -l < reformat_seg.tsv)
+     # --- HARD VALIDATION: check chrom overlap between seg (col1) and snv (col2)
+    cut -f1 reformat_seg.tsv | tail -n +2 | sort -u > seg.chroms.txt
+    cut -f2 reformat_snv.maf | tail -n +2 | sort -u > snv.chroms.txt
 
     if [ "${seg_lines}" -lt 2 ]; then
       echo "ERROR: Seg file has no data rows after cleaning (only header)."
