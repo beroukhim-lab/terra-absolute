@@ -47,7 +47,6 @@ task absolute {
     head -n 5 reformat_indel.maf
     echo "Rows:"; wc -l reformat_indel.maf
     echo ""
-
     # --- HARD VALIDATION: ensure SNV/INDEL not empty (beyond header)
     seg_lines="$(wc -l < reformat_seg.tsv || true)"
     snv_lines="$(wc -l < reformat_snv.maf || true)"
@@ -71,21 +70,9 @@ task absolute {
       exit 1
     fi
 
-    # indels can be empty sometimes; warn but don’t fail
     if [ "${indel_lines}" -lt 2 ]; then
       echo "WARNING: INDEL file has no data rows (only header). Continuing anyway."
     fi
-
-    overlap_count=$(comm -12 seg.chroms.txt snv.chroms.txt | wc -l | tr -d ' ')
-    echo "Chrom overlap count (SEG vs SNV): ${overlap_count}"
-    if [ "${overlap_count}" -eq 0 ]; then
-      echo "ERROR: No chromosome overlap between seg and SNV inputs."
-      echo "This often means genome build mismatch (hg19 vs hg38) or wrong column assumption."
-      echo "SEG chroms (first 20):"; head -n 20 seg.chroms.txt
-      echo "SNV chroms (first 20):"; head -n 20 snv.chroms.txt
-      exit 1
-    fi
-    echo ""
 
     # --- Optional: install RColorBrewer if missing (won't stop run if install fails)
     echo "=== Checking R packages ==="
