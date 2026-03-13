@@ -16,6 +16,8 @@ task absolute {
 
   command <<<
     set -euo pipefail
+    set -x
+
 
     echo "=== INPUT FILES (as provided to task) ==="
     ls -lh "~{capseg_file}" "~{snp}" "~{indel}"
@@ -46,9 +48,18 @@ task absolute {
     echo "Rows:"; wc -l reformat_indel.maf
     echo ""
 
-     # --- HARD VALIDATION: check chrom overlap between seg (col1) and snv (col2)
-    cut -f1 reformat_seg.tsv | tail -n +2 | sort -u > seg.chroms.txt
-    cut -f2 reformat_snv.maf | tail -n +2 | sort -u > snv.chroms.txt
+    # --- HARD VALIDATION: ensure SNV/INDEL not empty (beyond header)
+    seg_lines="$(wc -l < reformat_seg.tsv || true)"
+    snv_lines="$(wc -l < reformat_snv.maf || true)"
+    indel_lines="$(wc -l < reformat_indel.maf || true)"
+
+    echo "seg_lines=${seg_lines}"
+    echo "snv_lines=${snv_lines}"
+    echo "indel_lines=${indel_lines}"
+
+    test -n "${seg_lines}" || { echo "ERROR: failed to count lines in reformat_seg.tsv"; exit 1; }
+    test -n "${snv_lines}" || { echo "ERROR: failed to count lines in reformat_snv.maf"; exit 1; }
+    test -n "${indel_lines}" || { echo "ERROR: failed to count lines in reformat_indel.maf"; exit 1; }
 
     if [ "${seg_lines}" -lt 2 ]; then
       echo "ERROR: Seg file has no data rows after cleaning (only header)."
@@ -64,10 +75,6 @@ task absolute {
     if [ "${indel_lines}" -lt 2 ]; then
       echo "WARNING: INDEL file has no data rows (only header). Continuing anyway."
     fi
-
-    # --- HARD VALIDATION: check chrom overlap between seg (col1) and snv (col5)
-    cut -f1 reformat_seg.tsv | tail -n +2 | sort -u > seg.chroms.txt
-    cut -f5 reformat_snv.maf | tail -n +2 | sort -u > snv.chroms.txt
 
     overlap_count=$(comm -12 seg.chroms.txt snv.chroms.txt | wc -l | tr -d ' ')
     echo "Chrom overlap count (SEG vs SNV): ${overlap_count}"
