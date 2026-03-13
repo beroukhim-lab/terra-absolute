@@ -34,16 +34,20 @@ indel_out <- paste0(sample_id, ".indel")
 
 # Converting input maf file to snp and indel files needed for ABSOLUTE
 
-model_colnames <- c(
-  "Hugo_Symbol", "Entrez_Gene_Id", "Center", "NCBI_Build",
-  "Chromosome", "Start_position", "End_position", "Strand",
-  "Variant_Classification", "Variant_Type", "Reference_Allele",
-  "Tumor_Seq_Allele1", "Tumor_Seq_Allele2", "dbSNP_RS",
-  "dbSNP_Val_Status", "Tumor_Sample_Barcode",
-  "Matched_Norm_Sample_Barcode", "Protein_Change",
-  "UniProt_AApos", "t_alt_count", "t_ref_count"
-)
+ # model_colnames <- c(
+  # "Hugo_Symbol", "Entrez_Gene_Id", "Center", "NCBI_Build",
+  # "Chromosome", "Start_position", "End_position", "Strand",
+  # "Variant_Classification", "Variant_Type", "Reference_Allele",
+  # "Tumor_Seq_Allele1", "Tumor_Seq_Allele2", "dbSNP_RS",
+  # "dbSNP_Val_Status", "Tumor_Sample_Barcode",
+  # "Matched_Norm_Sample_Barcode", "Protein_Change",
+  # "UniProt_AApos", "t_alt_count", "t_ref_count"
+# )
 
+model_colnames <- c(
+  "Hugo_Symbol", "Chromosome", "Start_position", "Strand",
+  "Variant_Classification", "Variant_Type", "Tumor_Sample_Barcode", "Protein_Change", "t_alt_count", "t_ref_count"
+)
 # Read MAF
 maf <- read.delim(input_maf, comment.char = "#", stringsAsFactors = FALSE, check.names = FALSE)
 
